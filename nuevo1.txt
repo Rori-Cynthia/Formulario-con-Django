@@ -1,0 +1,287 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------models.py
+------------------------
+
+from django.db import models
+
+class Book(models.Model):
+    title = models.CharField(max_length=150)
+    author = models.CharField(max_length=150)
+    valuation = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.title} - {self.author}"
+
+----------------------------------------------------------------------------------------------------------
+
+	1)	Definición del modelo Book:
+
+		La clase Book hereda de models.Model, lo que significa que es un modelo de Django, es decir, una representación de una tabla en la base de datos.
+
+	2)	Campos del modelo:
+
+		title: Es un campo de texto (tipo CharField) con un máximo de 150 caracteres para almacenar el título del libro.
+		author: También es un campo de texto para almacenar el nombre del autor, con un límite de 150 caracteres.
+		valuation: Es un campo numérico (tipo IntegerField) que permite guardar una valoración del libro, probablemente un número entero.
+
+	3)	Método especial __str__: 
+
+		Este método define cómo se mostrará el objeto Book cuando se convierta a una cadena (por ejemplo, en el administrador de Django o en las consultas). En este caso, devolverá el título y el autor del libro en formato "<título> - <autor>".
+			
+		RESUMEN:
+		
+		Este modelo se traducirá en una tabla en la base de datos con columnas para id (creada automáticamente por Django), title, author y valuation. ¡Y con esto puedes empezar a guardar información de libros en tu proyecto Django! 🚀
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+urls.py
+------------------------
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('inputbook/', views.input_book, name='inputbook'),
+]
+
+----------------------------------------------------------------------------------------------------------
+
+	1)	Importaciones:
+
+		path: Es una función proporcionada por Django para definir rutas (URLs) en tu aplicación.
+		views: Importa el módulo views desde la misma aplicación (representado por .). Aquí se encuentran las funciones o clases que manejarán las solicitudes asociadas a las rutas.
+
+	2)	Lista urlpatterns:
+
+		Es una lista especial que Django utiliza para registrar las rutas (URLs) de tu aplicación. Cada elemento define una ruta y qué función (o vista) la manejará.
+
+	3)	Definición de la ruta:
+
+		path('inputbook/', views.input_book, name='inputbook')
+		'inputbook/': Es la URL relativa que se asocia con esta vista. Cuando un usuario accede a http://<tu-dominio>/inputbook/, esta ruta se activa.
+		views.input_book: Es la función o vista en views.py que manejará la solicitud para esta URL.
+		name='inputbook': Es un nombre único que se le da a esta ruta. Permite referirse a esta URL en otras partes del proyecto (por ejemplo, en plantillas o redirecciones) de manera más sencilla.
+
+		RESUMEN:
+		
+		Este archivo define una sola ruta que vincula la URL /inputbook/ con una función llamada input_book en el archivo views.py. El nombre inputbook sirve para identificarla de forma clara dentro del proyecto.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+views.py
+------------------------
+
+from django.shortcuts import render
+from .forms import BookForm
+
+def input_book(request):
+    if request.method == 'POST':
+        form = BookForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return render(request, 'success.html', {'title': form.cleaned_data['title']})
+    else:
+        form = BookForm()
+
+    return render(request, 'inputbook.html', {'form': form})	
+
+----------------------------------------------------------------------------------------------------------
+
+	1)	Importaciones:
+
+		render: Es una función de Django que genera una respuesta HTTP al renderizar una plantilla (HTML) con los datos proporcionados.
+		BookForm: Importa un formulario personalizado definido en forms.py. Este formulario se utiliza para manejar los datos relacionados con el modelo Book.
+		
+	2)	Definición de la vista input_book: 
+
+		Esta función maneja las solicitudes a la ruta asociada (en este caso, /inputbook/ según tu archivo de URLs).
+
+	3)	Lógica principal:
+
+		Si la solicitud es de tipo POST:
+		
+			request.POST: Obtiene los datos enviados desde el formulario.
+			form.is_valid(): Verifica si los datos enviados cumplen con las validaciones del formulario.
+			form.save(): Si el formulario es válido, guarda los datos en la base de datos (automáticamente usa el modelo asociado al formulario).
+			render(request, 'success.html', ...): Si los datos se guardan correctamente, renderiza la plantilla success.html, enviando como contexto el título del libro guardado.
+			
+		Si la solicitud es de tipo GET:
+		
+			form = BookForm(): Crea una instancia vacía del formulario para mostrarla en la plantilla.
+		
+	4)	Renderizado final:
+
+			render(request, 'inputbook.html', {'form': form}):
+			
+				Renderiza la plantilla inputbook.html y pasa la instancia del formulario (form) para que sea utilizada en el HTML.
+
+		RESUMEN:
+		Esta vista:
+
+		Muestra un formulario para ingresar datos de un libro en la URL /inputbook/.
+		Procesa los datos enviados (POST) para guardarlos en la base de datos si son válidos.
+		Redirige a una página de éxito (success.html) después de guardar el libro, incluyendo el título del libro guardado en el contexto.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+forms.py
+------------------------
+
+from django import forms
+from .models import Book
+
+class BookForm(forms.ModelForm):
+    class Meta:
+        model = Book
+        fields = ['title', 'author', 'valuation']
+
+----------------------------------------------------------------------------------------------------------
+
+	1)	Importaciones:
+
+		forms: Es el módulo de Django que permite crear y manejar formularios.
+		Book: Importa el modelo Book definido en models.py, que representa un libro en la base de datos.
+		
+	2)	Definición de la clase BookForm:
+
+		Esta clase hereda de forms.ModelForm, lo que significa que se basa en un modelo existente para generar automáticamente los campos del formulario.
+		Sirve para crear, editar o validar datos relacionados con el modelo Book.
+
+	3)	Clase interna Meta:
+
+		Define configuraciones adicionales para el formulario:
+			
+			model = Book: Indica que este formulario está vinculado al modelo Book.
+			fields = ['title', 'author', 'valuation']: Especifica los campos del modelo que aparecerán en el formulario (title, author y valuation).
+			
+			Solo estos campos serán editables a través del formulario.
+		
+		RESUMEN
+		
+		Este archivo define un formulario llamado BookForm que:
+
+		Genera automáticamente los campos necesarios para interactuar con el modelo Book.
+		Permite trabajar específicamente con los campos title, author y valuation.
+		
+		¿Cómo se usa?
+		
+		Se puede usar en una vista para:
+
+		Mostrar el formulario al usuario.
+		Recibir y validar los datos enviados por el usuario.
+		Guardar los datos en la base de datos si son válidos.
+		
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+admin.py
+------------------------
+
+from django.contrib import admin
+from .models import Book
+
+@admin.register(Book)
+class BookAdmin(admin.ModelAdmin):
+    list_display = ('title', 'author', 'valuation')
+
+----------------------------------------------------------------------------------------------------------
+
+	1)	Importaciones:
+
+		admin: Importa el módulo de administración de Django que permite personalizar cómo se muestran los modelos en el panel de administración.
+		Book: Importa el modelo Book desde models.py, que representa los libros.
+
+	2)	Decorador @admin.register(Book):
+
+		Este decorador le indica a Django que registre el modelo Book en el panel de administración.
+		Esto permite que puedas administrar los objetos del modelo Book directamente desde el administrador de Django.
+
+	3)	Clase BookAdmin:
+
+		BookAdmin es una clase que hereda de admin.ModelAdmin. Esta clase te permite personalizar cómo se verán y se comportarán los objetos Book en el panel de administración de Django.
+		Dentro de esta clase, puedes definir varias configuraciones para mejorar la visualización y la interacción con los datos.
+
+	4)	list_display:
+
+		list_display = ('title', 'author', 'valuation'):
+		Este atributo le dice a Django qué columnas mostrar en la lista de libros en el panel de administración.
+		En este caso, se mostrarán las columnas title, author y valuation para cada objeto Book.
+		
+		RESUMEN
+		
+		Este archivo define cómo se mostrará el modelo Book en el panel de administración de Django. La configuración que se hace es la siguiente:
+
+		Se registran los libros para que puedan ser gestionados desde la interfaz de administración.
+		Se especifica que, en la lista de libros, se deben mostrar las columnas title, author y valuation.
+		
+		¿Por qué es útil?
+		
+		Este archivo permite que los administradores de tu sitio web puedan gestionar los libros de forma más fácil y clara, sin tener que interactuar directamente con la base de datos.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+inputbook.html
+------------------------
+
+{% extends 'base.html' %}
+
+{% block title %}Ingreso de Libros{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+    <h1>Formulario para Ingreso de Libros</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Enviar</button>
+    </form>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}
+
+----------------------------------------------------------------------------------------------------------
+
+1)	{% extends 'base.html' %}
+	
+	{% extends 'base.html' %}: Esta línea indica que este template está extendiendo otro archivo llamado base.html. Es una técnica común en Django para reutilizar una estructura común (como cabeceras, pie de página, menús, etc.) en diferentes páginas de tu sitio web.
+	Al usar extends, este template hereda todo lo que esté en base.html y puede sobrescribir secciones específicas (como el título, el encabezado o el contenido) usando bloques ({% block %}).
+	
+2)	{% block title %}Ingreso de Libros{% endblock %}
+
+	{% block title %}Ingreso de Libros{% endblock %}: Esto define el contenido del bloque title en este template.
+	En Django, los bloques son secciones que puedes sobrescribir de la plantilla base. En este caso, el bloque title se utiliza para establecer el título de la página (lo que aparece en la pestaña del navegador).
+	Ingreso de Libros es el texto que aparecerá como título de la página.
+	
+3)	{% block header %} {% endblock %}
+
+	{% block header %} {% endblock %}: Este bloque está vacío en este template, pero se ha declarado para sobrescribir o insertar contenido en la sección de encabezado (header) definida en el template base.html.
+	Si en base.html tienes un bloque de encabezado que muestra un logo, un menú o algo similar, puedes agregarle contenido aquí, pero en este caso, está vacío.
+
+4)	{% block content %}
+
+	{% block content %}: Este bloque es donde se inserta el contenido principal de la página. Es el lugar donde se sobrescribe el contenido de la plantilla base para mostrar la información específica de esta página (en este caso, el formulario para ingresar libros).
+	
+	Dentro de este bloque:
+
+	<h1>Formulario para Ingreso de Libros</h1>: Es el título principal de esta página. Está dentro de una etiqueta <h1>, que es un encabezado de primer nivel, y le dice al usuario que esta página es un formulario para ingresar libros.
+
+	<form method="POST">: Esta es la etiqueta que inicia el formulario. El atributo method="POST" indica que los datos del formulario se enviarán al servidor de forma segura (no en la URL).
+
+	{% csrf_token %}: Este es el token de protección CSRF que Django genera automáticamente para proteger el formulario de ataques maliciosos. Se incluye dentro del formulario para garantizar que la solicitud provenga de una fuente confiable.
+
+	{{ form.as_p }}: Aquí, se renderiza el formulario form (probablemente un formulario de Django que contiene los campos para ingresar el libro). El método .as_p convierte cada campo del formulario en un párrafo HTML (<p>), lo que significa que cada campo se muestra como un bloque de texto.
+
+	<button type="submit">Enviar</button>: Este es el botón para enviar el formulario. El tipo submit indica que este botón enviará los datos que el usuario ha introducido en el formulario al servidor cuando se haga clic en él.
+
+5)	{% block footer %} {% endblock %}
+	
+	{% block footer %} {% endblock %}: Este bloque también está vacío, pero se declara aquí para permitir la sobrescritura de la sección del pie de página (footer) de la plantilla base. Si necesitas añadir contenido en el pie de página (como información de derechos de autor o enlaces), puedes hacerlo aquí.
+	
+	RESUMEN:
+	
+	Este template está configurado para mostrar un formulario donde los usuarios pueden ingresar información sobre un libro (como el título, el autor y la valoración). Aquí es donde la estructura base (base.html) se extiende para mostrar esta página específica, mientras se dejan espacios para agregar o modificar el encabezado y el pie de página si se necesita.
+
+	Las partes importantes son:
+
+	El bloque title, que define el título de la página.
+	El bloque content, que contiene el formulario para ingresar los datos del libro.
+	Los bloques header y footer, que están vacíos por ahora, pero pueden ser llenados según sea necesario.
+	Este tipo de enfoque hace que el diseño de tu sitio sea más limpio y organizado, ya que puedes reutilizar partes comunes del sitio (como el encabezado y pie de página) sin tener que repetirlas en cada página.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
