@@ -285,3 +285,35 @@ inputbook.html
 	Este tipo de enfoque hace que el diseño de tu sitio sea más limpio y organizado, ya que puedes reutilizar partes comunes del sitio (como el encabezado y pie de página) sin tener que repetirlas en cada página.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+FLUJO:
+
+Flujo general:
+	El usuario accede a la página del formulario.
+		El navegador carga la plantilla inputbook.html, que muestra un formulario con campos para ingresar un libro: título, autor y valoración.
+		Este formulario está vinculado al modelo Book gracias a BookForm en el backend.
+El usuario llena y envía el formulario.
+El usuario completa los campos del formulario y presiona el botón "Enviar".
+El navegador envía los datos al servidor utilizando el método POST.
+Django recibe la solicitud y valida los datos.
+La vista input_book verifica que la solicitud sea POST.
+Django crea una instancia del formulario BookForm con los datos enviados.
+El método form.is_valid() verifica que los datos ingresados cumplen con las reglas definidas por el modelo Book:
+El título y el autor no pueden exceder 150 caracteres.
+La valoración debe ser un número entero.
+Los datos válidos se guardan en la base de datos.
+Si los datos son válidos, el método form.save() guarda una nueva entrada en la base de datos para el modelo Book.
+Se muestra una página de confirmación al usuario.
+Después de guardar el libro, la vista input_book redirige al usuario a la plantilla success.html.
+Esta página confirma que el libro fue registrado y muestra el título del libro que se guardó.
+El administrador puede ver los libros registrados.
+Gracias a la clase BookAdmin configurada en admin.py, el administrador puede gestionar los libros desde el panel de administración de Django.
+En el panel, se muestran las columnas title, author y valuation para cada libro registrado.
+En resumen:
+Formulario HTML: El usuario ingresa los datos.
+Vista Django: Procesa los datos enviados.
+Formulario (backend): Valida los datos ingresados.
+Base de datos: Los datos válidos se guardan.
+Página de éxito: Confirma al usuario que el libro fue registrado.
+Panel de administración: Permite al administrador gestionar los datos.
+
